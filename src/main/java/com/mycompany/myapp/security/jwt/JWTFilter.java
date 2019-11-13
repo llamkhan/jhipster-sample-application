@@ -1,5 +1,8 @@
 package com.mycompany.myapp.security.jwt;
 
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseAuthException;
+import com.google.firebase.auth.FirebaseToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.util.StringUtils;
@@ -10,7 +13,9 @@ import javax.servlet.ServletException;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.util.Optional;
 
 /**
  * Filters incoming requests and installs a Spring Security principal if a header corresponding to a valid user is
@@ -31,11 +36,24 @@ public class JWTFilter extends GenericFilterBean {
         throws IOException, ServletException {
         HttpServletRequest httpServletRequest = (HttpServletRequest) servletRequest;
         String jwt = resolveToken(httpServletRequest);
-        if (StringUtils.hasText(jwt) && this.tokenProvider.validateToken(jwt)) {
+        if (this.extractUid(jwt).isPresent()) {
             Authentication authentication = this.tokenProvider.getAuthentication(jwt);
             SecurityContextHolder.getContext().setAuthentication(authentication);
+            filterChain.doFilter(servletRequest, servletResponse);
+        } else {
+            ((HttpServletResponse) servletResponse).sendError(HttpServletResponse.SC_UNAUTHORIZED, "Invalid token!");
         }
-        filterChain.doFilter(servletRequest, servletResponse);
+    }
+
+    private Optional<String> extractUid(String token) {
+        if(token == null) {
+            return Optional.empty();
+        }
+        try {
+            return  Optional.ofNullable(FirebaseAuth.getInstance().verifyIdToken(token)).map(FirebaseToken::getUid);
+        } catch (FirebaseAuthException e) {
+            return Optional.empty();
+        }
     }
 
     private String resolveToken(HttpServletRequest request){

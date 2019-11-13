@@ -1,5 +1,8 @@
 package com.mycompany.myapp;
 
+import com.google.auth.oauth2.GoogleCredentials;
+import com.google.firebase.FirebaseApp;
+import com.google.firebase.FirebaseOptions;
 import com.mycompany.myapp.config.ApplicationProperties;
 import com.mycompany.myapp.config.DefaultProfileUtil;
 
@@ -15,6 +18,8 @@ import org.springframework.boot.autoconfigure.liquibase.LiquibaseProperties;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.core.env.Environment;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.Arrays;
@@ -57,11 +62,21 @@ public class FirebaseRestDemoV1App implements InitializingBean {
      *
      * @param args the command line arguments.
      */
-    public static void main(String[] args) {
+    public static void main(String[] args) throws IOException {
         SpringApplication app = new SpringApplication(FirebaseRestDemoV1App.class);
         DefaultProfileUtil.addDefaultProfile(app);
         Environment env = app.run(args).getEnvironment();
         logApplicationStartup(env);
+        configFireBase();
+    }
+
+    private static void configFireBase() throws IOException {
+        InputStream privateKey = FirebaseRestDemoV1App.class
+            .getClassLoader().getResourceAsStream("key/moonlit-haven-250615-firebase-adminsdk-pbu7m-5ed5832619.json");
+        FirebaseOptions options = new FirebaseOptions.Builder()
+            .setCredentials(GoogleCredentials.fromStream(privateKey))
+             .build();
+        FirebaseApp.initializeApp(options);
     }
 
     private static void logApplicationStartup(Environment env) {
