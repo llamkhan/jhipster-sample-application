@@ -3,6 +3,14 @@ package com.mycompany.myapp.security.jwt;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseAuthException;
 import com.google.firebase.auth.FirebaseToken;
+import com.google.firebase.auth.UserRecord;
+import com.google.firebase.auth.internal.FirebaseCustomAuthToken;
+import com.google.firebase.auth.internal.FirebaseTokenVerifier;
+import com.mycompany.myapp.security.firebase.FirebaseAuthenticationToken;
+import com.mycompany.myapp.security.firebase.FirebaseParser;
+import com.mycompany.myapp.security.firebase.FirebaseTokenHolder;
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.Jwts;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.core.Authentication;
@@ -18,7 +26,6 @@ import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.util.Optional;
 
 /**
  * Filters incoming requests and installs a Spring Security principal if a header corresponding to a valid user is
@@ -42,25 +49,15 @@ public class JWTFilter extends GenericFilterBean {
         HttpServletRequest httpServletRequest = (HttpServletRequest) servletRequest;
         String jwt = resolveToken(httpServletRequest);
 
-        if (this.extractUid(jwt).isPresent()) {
-//            Authentication authentication = this.tokenProvider.getAuthentication(jwt);
-//            SecurityContextHolder.getContext().setAuthentication(authentication);
+        FirebaseTokenHolder holder = new FirebaseParser().parseToken(jwt);
+        if (holder!= null) {
+            String userName = holder.getUid();
+            Authentication auth = new FirebaseAuthenticationToken(userName, holder);
+            SecurityContextHolder.getContext().setAuthentication(auth);
             filterChain.doFilter(servletRequest, servletResponse);
         } else {
             logger.error("Unable to extract token: " + jwt);
             ((HttpServletResponse) servletResponse).sendError(HttpServletResponse.SC_UNAUTHORIZED, "Invalid token!");
-        }
-    }
-
-    private Optional<String> extractUid(String token) {
-        if(token == null) {
-            return Optional.empty();
-        }
-        try {
-            return Optional.ofNullable(FirebaseAuth.getInstance().verifyIdToken(token)).map(FirebaseToken::getUid);
-        } catch (FirebaseAuthException e) {
-            e.printStackTrace();
-            return Optional.empty();
         }
     }
 

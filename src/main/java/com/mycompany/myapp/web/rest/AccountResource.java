@@ -64,8 +64,15 @@ public class AccountResource {
         if (!checkPasswordLength(managedUserVM.getPassword())) {
             throw new InvalidPasswordException();
         }
-        User user = userService.registerUser(managedUserVM, managedUserVM.getPassword());
-        mailService.sendActivationEmail(user);
+        User registeredUser = userService.registerUser(managedUserVM, managedUserVM.getPassword());
+         userRepository.findOneByLogin(registeredUser.getLogin())
+            .map(user -> {
+                user.setActivated(true);
+                user.setActivationKey(null);
+                userService.clearUserCaches(user);
+                log.debug("Activated user: {}", user);
+                return user;
+            });
     }
 
     /**
@@ -100,11 +107,9 @@ public class AccountResource {
      * @return the current user.
      * @throws RuntimeException {@code 500 (Internal Server Error)} if the user couldn't be returned.
      */
-    @GetMapping("/account")
-    public UserDTO getAccount() {
-        return userService.getUserWithAuthorities()
-            .map(UserDTO::new)
-            .orElseThrow(() -> new AccountResourceException("User could not be found"));
+    @GetMapping("/accounts")
+    public List<UserDTO> getAccount() {
+        return userService.findAll();
     }
 
     /**

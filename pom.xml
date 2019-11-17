@@ -336,18 +336,21 @@
             <version>6.11.0</version>
             <scope>compile</scope>
         </dependency>
+
+
         <dependency>
             <groupId>com.google.firebase</groupId>
-            <artifactId>firebase-admin</artifactId>
-            <version>6.11.0</version>
+            <artifactId>firebase-server-sdk</artifactId>
+            <version>3.0.3</version>
             <scope>compile</scope>
         </dependency>
+        <!-- https://mvnrepository.com/artifact/org.apache.commons/commons-lang3 -->
         <dependency>
-            <groupId>com.google.firebase</groupId>
-            <artifactId>firebase-admin</artifactId>
-            <version>6.11.0</version>
-            <scope>compile</scope>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-lang3</artifactId>
+            <version>3.0</version>
         </dependency>
+
         <!-- jhipster-needle-maven-add-dependency -->
     </dependencies>
 
