@@ -1,6 +1,9 @@
 package com.mycompany.myapp;
 
 import com.google.auth.oauth2.GoogleCredentials;
+import com.google.cloud.storage.Storage;
+import com.google.cloud.storage.StorageOptions;
+import com.google.common.collect.Lists;
 import com.google.firebase.FirebaseApp;
 import com.google.firebase.FirebaseOptions;
 import com.mycompany.myapp.config.ApplicationProperties;
@@ -71,11 +74,20 @@ public class FirebaseRestDemoV1App implements InitializingBean {
     }
 
     private static void configFireBase() throws IOException {
-        InputStream privateKey = FirebaseRestDemoV1App.class
-            .getClassLoader().getResourceAsStream("key/moonlit-haven-250615-firebase-adminsdk-pbu7m-5ed5832619.json");
+//        InputStream privateKey = FirebaseRestDemoV1App.class
+//            .getClassLoader().getResourceAsStream("key/moonlit-haven-250615-firebase-adminsdk-pbu7m-5ed5832619.json");
+////        FirebaseOptions options = new FirebaseOptions.Builder()
+////            .setCredentials(GoogleCredentials.fromStream(privateKey))
+////             .build();
+//
+//        GoogleCredentials credentials = GoogleCredentials.fromStream(privateKey)
+//            .createScoped(Lists.newArrayList("https://www.googleapis.com/auth/cloud-platform"));
+//        Storage storage = StorageOptions.newBuilder().setCredentials(credentials).build().getService();
+
         FirebaseOptions options = new FirebaseOptions.Builder()
-            .setCredentials(GoogleCredentials.fromStream(privateKey))
-             .build();
+            .setCredentials(GoogleCredentials.getApplicationDefault())
+            .build();
+
         FirebaseApp.initializeApp(options);
     }
 

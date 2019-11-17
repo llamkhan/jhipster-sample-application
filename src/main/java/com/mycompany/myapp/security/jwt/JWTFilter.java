@@ -3,7 +3,10 @@ package com.mycompany.myapp.security.jwt;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseAuthException;
 import com.google.firebase.auth.FirebaseToken;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.util.StringUtils;
 import org.springframework.web.filter.GenericFilterBean;
@@ -23,6 +26,8 @@ import java.util.Optional;
  */
 public class JWTFilter extends GenericFilterBean {
 
+    private Logger logger = LoggerFactory.getLogger(JWTFilter.class);
+
     public static final String AUTHORIZATION_HEADER = "Authorization";
 
     private TokenProvider tokenProvider;
@@ -36,11 +41,13 @@ public class JWTFilter extends GenericFilterBean {
         throws IOException, ServletException {
         HttpServletRequest httpServletRequest = (HttpServletRequest) servletRequest;
         String jwt = resolveToken(httpServletRequest);
+
         if (this.extractUid(jwt).isPresent()) {
-            Authentication authentication = this.tokenProvider.getAuthentication(jwt);
-            SecurityContextHolder.getContext().setAuthentication(authentication);
+//            Authentication authentication = this.tokenProvider.getAuthentication(jwt);
+//            SecurityContextHolder.getContext().setAuthentication(authentication);
             filterChain.doFilter(servletRequest, servletResponse);
         } else {
+            logger.error("Unable to extract token: " + jwt);
             ((HttpServletResponse) servletResponse).sendError(HttpServletResponse.SC_UNAUTHORIZED, "Invalid token!");
         }
     }
@@ -50,8 +57,9 @@ public class JWTFilter extends GenericFilterBean {
             return Optional.empty();
         }
         try {
-            return  Optional.ofNullable(FirebaseAuth.getInstance().verifyIdToken(token)).map(FirebaseToken::getUid);
+            return Optional.ofNullable(FirebaseAuth.getInstance().verifyIdToken(token)).map(FirebaseToken::getUid);
         } catch (FirebaseAuthException e) {
+            e.printStackTrace();
             return Optional.empty();
         }
     }
