@@ -9,6 +9,7 @@ import com.google.firebase.FirebaseOptions;
 import com.mycompany.myapp.config.ApplicationProperties;
 import com.mycompany.myapp.config.DefaultProfileUtil;
 
+import com.mycompany.myapp.security.firebase.config.FirebaseConfig;
 import io.github.jhipster.config.JHipsterConstants;
 
 import org.apache.commons.lang3.StringUtils;
@@ -19,6 +20,7 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.liquibase.LiquibaseProperties;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.core.env.Environment;
 
 import java.io.IOException;
@@ -70,27 +72,14 @@ public class FirebaseRestDemoV1App implements InitializingBean {
         DefaultProfileUtil.addDefaultProfile(app);
         Environment env = app.run(args).getEnvironment();
         logApplicationStartup(env);
-        configFireBase();
+        registerSecurityConfig();
     }
 
-    private static void configFireBase() throws IOException {
-//        InputStream privateKey = FirebaseRestDemoV1App.class
-//            .getClassLoader().getResourceAsStream("key/moonlit-haven-250615-firebase-adminsdk-pbu7m-5ed5832619.json");
-////        FirebaseOptions options = new FirebaseOptions.Builder()
-////            .setCredentials(GoogleCredentials.fromStream(privateKey))
-////             .build();
-//
-//        GoogleCredentials credentials = GoogleCredentials.fromStream(privateKey)
-//            .createScoped(Lists.newArrayList("https://www.googleapis.com/auth/cloud-platform"));
-//        Storage storage = StorageOptions.newBuilder().setCredentials(credentials).build().getService();
-
-        FirebaseOptions options = new FirebaseOptions.Builder()
-            .setCredentials(GoogleCredentials.getApplicationDefault())
-            .build();
-
-        FirebaseApp.initializeApp(options);
+    private static void registerSecurityConfig() {
+        AnnotationConfigApplicationContext ctx = new AnnotationConfigApplicationContext();
+        ctx.register(FirebaseConfig.class);
+        ctx.refresh();
     }
-
     private static void logApplicationStartup(Environment env) {
         String protocol = "http";
         if (env.getProperty("server.ssl.key-store") != null) {

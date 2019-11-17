@@ -1,6 +1,7 @@
 package com.mycompany.myapp.config;
 
 import com.mycompany.myapp.security.*;
+import com.mycompany.myapp.security.firebase.FireBaseConfigurer;
 import com.mycompany.myapp.security.jwt.*;
 
 import org.springframework.beans.factory.BeanInitializationException;
@@ -96,7 +97,7 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
         // @formatter:on
     }
 
-    private JWTConfigurer securityConfigurerAdapter() {
-        return new JWTConfigurer(tokenProvider);
+    private FireBaseConfigurer securityConfigurerAdapter() {
+        return new FireBaseConfigurer();
     }
 }
